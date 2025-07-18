@@ -16,13 +16,16 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '18'  # Match your project Node version
+          node-version: '24'  # Match your project Node version
 
       - name: Install dependencies
         run: npm ci
+        working-directory: ./angular
 
       - name: Run lint
         run: npm run lint  # Make sure this script is defined in package.json
+        working-directory: ./angular
 
       - name: Run unit tests with Jest
         run: npm test -- --runInBand
+        working-directory: ./angular
