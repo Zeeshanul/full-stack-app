@@ -27,5 +27,5 @@ jobs:
         working-directory: ./angular
 
       - name: Run unit tests with Jest
-        run: npm test -- --runInBand
+        run: npm test
         working-directory: ./angular
