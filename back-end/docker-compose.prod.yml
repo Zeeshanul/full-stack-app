@@ -5,20 +5,13 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.prod
-    image: fullstackapp/backend:prod
+    image: fullstack-backend:latest
     restart: always
     ports:
       - "${PORT:-3000}:3000"
-    environment:
-      NODE_ENV: production
-      PORT: ${PORT:-3000}
-      DB_HOST: ${DB_HOST}
-      DB_PORT: ${DB_PORT:-3306}
-      DB_USERNAME: ${DB_USERNAME}
-      DB_PASSWORD: ${DB_PASSWORD}
-      DB_NAME: ${DB_NAME}
 
 # NOTE:
-# - This file intentionally omits the local `mysql` service and all bind mounts.
-# - Set production DB credentials via environment variables or a secrets manager.
-# - Example run: `docker-compose -f docker-compose.prod.yml up -d --build`
+# - This file is used ONLY for building the production Docker image.
+# - Environment variables are configured in the ECS Task Definition (lib/ecs-stack.ts).
+# - Secrets are managed via AWS Parameter Store and Secrets Manager.
+# - To build the image: `docker-compose -f docker-compose.prod.yml build`

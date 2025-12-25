@@ -1,0 +1,65 @@
+import * as cdk from 'aws-cdk-lib/core';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as elasticache from 'aws-cdk-lib/aws-elasticache';
+import { Construct } from 'constructs';
+
+export interface CacheStackProps extends cdk.StackProps {
+  vpc: ec2.IVpc;
+}
+
+/**
+ * Redis Cache Stack Template
+ * Uncomment and customize this when you're ready to add Redis caching
+ */
+export class CacheStack extends cdk.Stack {
+  public readonly cacheCluster: elasticache.CfnCacheCluster;
+
+  constructor(scope: Construct, id: string, props: CacheStackProps) {
+    super(scope, id, props);
+
+    const { vpc } = props;
+
+    // Create security group for Redis
+    const redisSecurityGroup = new ec2.SecurityGroup(this, 'RedisSecurityGroup', {
+      vpc,
+      description: 'Security group for Redis cache',
+      allowAllOutbound: true,
+    });
+
+    // Allow Redis port from within VPC
+    redisSecurityGroup.addIngressRule(
+      ec2.Peer.ipv4(vpc.vpcCidrBlock),
+      ec2.Port.tcp(6379),
+      'Allow Redis access from VPC'
+    );
+
+    // Create subnet group
+    const subnetGroup = new elasticache.CfnSubnetGroup(this, 'RedisSubnetGroup', {
+      description: 'Subnet group for Redis cache',
+      subnetIds: vpc.privateSubnets.map(subnet => subnet.subnetId),
+    });
+
+    // Create Redis cache cluster
+    this.cacheCluster = new elasticache.CfnCacheCluster(this, 'RedisCluster', {
+      cacheNodeType: 'cache.t3.micro',
+      engine: 'redis',
+      numCacheNodes: 1,
+      cacheSubnetGroupName: subnetGroup.ref,
+      vpcSecurityGroupIds: [redisSecurityGroup.securityGroupId],
+    });
+
+    this.cacheCluster.addDependency(subnetGroup);
+
+    new cdk.CfnOutput(this, 'RedisEndpoint', {
+      value: this.cacheCluster.attrRedisEndpointAddress,
+      description: 'Redis Cache Endpoint',
+      exportName: 'FullStackRedisEndpoint',
+    });
+
+    new cdk.CfnOutput(this, 'RedisPort', {
+      value: this.cacheCluster.attrRedisEndpointPort,
+      description: 'Redis Cache Port',
+      exportName: 'FullStackRedisPort',
+    });
+  }
+}

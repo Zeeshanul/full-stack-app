@@ -1,0 +1,50 @@
+import * as cdk from 'aws-cdk-lib/core';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
+import * as ecs from 'aws-cdk-lib/aws-ecs';
+import * as ecs_patterns from 'aws-cdk-lib/aws-ecs-patterns';
+import { Construct } from 'constructs';
+
+export interface EcsStackProps extends cdk.StackProps {
+  vpc: ec2.IVpc;
+}
+
+/**
+ * ECS Stack Template
+ * Uncomment and customize this when you're ready to deploy your backend on ECS
+ */
+export class EcsStack extends cdk.Stack {
+  constructor(scope: Construct, id: string, props: EcsStackProps) {
+    super(scope, id, props);
+
+    const { vpc } = props;
+
+    // Create ECS Cluster
+    const cluster = new ecs.Cluster(this, 'FullStackCluster', {
+      vpc,
+      clusterName: 'full-stack-cluster',
+    });
+
+    // Example: Fargate Service with ALB
+    // const fargateService = new ecs_patterns.ApplicationLoadBalancedFargateService(
+    //   this,
+    //   'BackendService',
+    //   {
+    //     cluster,
+    //     taskImageOptions: {
+    //       image: ecs.ContainerImage.fromRegistry('your-backend-image'),
+    //       containerPort: 3000,
+    //       environment: {
+    //         // Add environment variables here
+    //       },
+    //     },
+    //     publicLoadBalancer: true,
+    //   }
+    // );
+
+    new cdk.CfnOutput(this, 'ClusterName', {
+      value: cluster.clusterName,
+      description: 'ECS Cluster Name',
+      exportName: 'FullStackEcsClusterName',
+    });
+  }
+}
