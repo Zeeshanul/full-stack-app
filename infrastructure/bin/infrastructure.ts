@@ -4,6 +4,7 @@ import { NetworkStack } from "../lib/network-stack";
 import { DatabaseStack } from "../lib/database-stack";
 import { EcsStack } from "../lib/ecs-stack";
 import { InfrastructureStack } from "../lib/infrastructure-stack";
+import { CodePipelineStack } from "../lib/codepipeline-stack";
 
 const app = new cdk.App();
 
@@ -38,6 +39,20 @@ const ecsStack = new EcsStack(app, "FullStackEcsStack", {
 });
 ecsStack.addDependency(networkStack);
 ecsStack.addDependency(databaseStack); // ECS needs database credentials
+
+// 4. Create the CodePipeline Stack (CI/CD for backend)
+const codePipelineStack = new CodePipelineStack(
+  app,
+  "FullStackCodePipelineStack",
+  {
+    env,
+    ecrRepository: ecsStack.repository, // ← Pass ECR repo from ECS stack
+    ecsService: ecsStack.service, // ← Pass ECS service from ECS stack
+    ecsCluster: ecsStack.cluster, // ← Pass ECS cluster from ECS stack
+    description: "CI/CD pipeline for backend deployment",
+  }
+);
+codePipelineStack.addDependency(ecsStack); // Pipeline needs ECS resources to exist first
 
 // 4. Main Infrastructure Stack (placeholder for future app resources)
 const infrastructureStack = new InfrastructureStack(app, "FullStackAppStack", {

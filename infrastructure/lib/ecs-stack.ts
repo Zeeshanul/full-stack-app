@@ -169,7 +169,7 @@ export class EcsStack extends cdk.Stack {
       cluster: this.cluster,
       taskDefinition,
       serviceName: 'fullstack-backend-service',
-      desiredCount: 1, // Start with 1 container (can scale up later)
+      desiredCount: 0, // Start with 0 - pipeline will deploy first image and scale to 1
       assignPublicIp: true, // Containers get public IPs (needed for internet access)
       vpcSubnets: {
         subnetType: ec2.SubnetType.PUBLIC, // Run containers in public subnets
