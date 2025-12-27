@@ -22,8 +22,10 @@ phases:
     commands:
       - echo Build started on `date`
       - echo Building the Docker image...
+      - cd back-end
       - docker build -f Dockerfile.prod -t $REPOSITORY_URI:latest .
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+      - cd ..
 
   # Post-build phase: Push to ECR and prepare deployment
   post_build:
