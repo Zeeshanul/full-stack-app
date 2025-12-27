@@ -3,6 +3,7 @@ import * as codebuild from 'aws-cdk-lib/aws-codebuild';
 import * as codepipeline from 'aws-cdk-lib/aws-codepipeline';
 import * as codepipeline_actions from 'aws-cdk-lib/aws-codepipeline-actions';
 import * as ecs from 'aws-cdk-lib/aws-ecs';
+import * as ec2 from 'aws-cdk-lib/aws-ec2';
 import * as ecr from 'aws-cdk-lib/aws-ecr';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import * as ssm from 'aws-cdk-lib/aws-ssm';  // Changed from secretsmanager
@@ -13,6 +14,7 @@ export interface CodePipelineStackProps extends cdk.StackProps {
   ecrRepository: ecr.IRepository;
   ecsService: ecs.IBaseService;
   ecsCluster: ecs.ICluster;
+  vpc: ec2.IVpc;
 }
 
 export class CodePipelineStack extends cdk.Stack {

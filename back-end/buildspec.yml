@@ -27,13 +27,27 @@ phases:
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
       - cd ..
 
-  # Post-build phase: Push to ECR and prepare deployment
+  # Post-build phase: Push to ECR, run migrations, and prepare deployment
   post_build:
     commands:
       - echo Build completed on `date`
       - echo Pushing the Docker images...
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
+      - echo Running database migrations as ECS task...
+      - |
+        TASK_ARN=$(aws ecs run-task \
+          --cluster fullstack-backend-cluster \
+          --task-definition fullstack-backend-migration \
+          --launch-type FARGATE \
+          --network-configuration "awsvpcConfiguration={subnets=[$(aws ec2 describe-subnets --filters Name=tag:Name,Values=*Public* --query 'Subnets[0].SubnetId' --output text)],assignPublicIp=ENABLED}" \
+          --region $AWS_DEFAULT_REGION \
+          --query 'tasks[0].taskArn' \
+          --output text)
+      - echo Migration task started with ARN $TASK_ARN
+      - echo Waiting for migration to complete...
+      - aws ecs wait tasks-stopped --cluster fullstack-backend-cluster --tasks $TASK_ARN --region $AWS_DEFAULT_REGION
+      - echo Migration completed
       - echo Writing image definitions file...
       - printf '[{"name":"BackendContainer","imageUri":"%s"}]' $REPOSITORY_URI:$IMAGE_TAG > imagedefinitions.json
       - cat imagedefinitions.json

@@ -49,6 +49,7 @@ const codePipelineStack = new CodePipelineStack(
     ecrRepository: ecsStack.repository, // ← Pass ECR repo from ECS stack
     ecsService: ecsStack.service, // ← Pass ECS service from ECS stack
     ecsCluster: ecsStack.cluster, // ← Pass ECS cluster from ECS stack
+    vpc: networkStack.vpc, // ← Pass VPC for migration task
     description: "CI/CD pipeline for backend deployment",
   }
 );

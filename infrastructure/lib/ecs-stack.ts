@@ -20,6 +20,7 @@ export class EcsStack extends cdk.Stack {
   public readonly service: ecs.FargateService;
   public readonly loadBalancer: elbv2.ApplicationLoadBalancer;
   public readonly repository: ecr.Repository;
+  public readonly migrationTaskDefinition: ecs.FargateTaskDefinition;
 
   constructor(scope: Construct, id: string, props: EcsStackProps) {
     super(scope, id, props);
@@ -158,6 +159,51 @@ export class EcsStack extends cdk.Stack {
     container.addPortMappings({
       containerPort: 3000,
       protocol: ecs.Protocol.TCP,
+    });
+
+    // =====================================================
+    // MIGRATION TASK DEFINITION (for running migrations separately)
+    // =====================================================
+    // This task definition is used to run migrations before deployment
+    const migrationTaskDefinition = new ecs.FargateTaskDefinition(this, 'BackendMigrationTaskDef', {
+      memoryLimitMiB: 512,
+      cpu: 256,
+      family: 'fullstack-backend-migration',
+    });
+
+    // Add migration container
+    const migrationContainer = migrationTaskDefinition.addContainer('MigrationContainer', {
+      image: ecs.ContainerImage.fromEcrRepository(this.repository, 'latest'),
+      
+      logging: ecs.LogDrivers.awsLogs({
+        streamPrefix: 'migration',
+        logGroup: logGroup,
+      }),
+      
+      environment: {
+        NODE_ENV: 'production',
+        DB_PORT: '3306',
+      },
+
+      secrets: {
+        DB_HOST: ecs.Secret.fromSsmParameter(props.dbHostParameter),
+        DB_USERNAME: ecs.Secret.fromSsmParameter(props.dbUsernameParameter),
+        DB_NAME: ecs.Secret.fromSsmParameter(props.dbNameParameter),
+        DB_PASSWORD: ecs.Secret.fromSsmParameter(props.dbPasswordParameter),
+      },
+      
+      // Override command to run migrations
+      command: ['npm', 'run', 'migration:run'],
+    });
+
+    // Store reference for export
+    this.migrationTaskDefinition = migrationTaskDefinition;
+
+    // Output migration task definition family name
+    new cdk.CfnOutput(this, 'MigrationTaskDefinitionFamily', {
+      value: migrationTaskDefinition.family,
+      description: 'Migration Task Definition Family Name',
+      exportName: 'MigrationTaskDefinitionFamily',
     });
 
     // =====================================================
