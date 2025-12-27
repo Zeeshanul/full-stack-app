@@ -80,6 +80,40 @@ export class CodePipelineStack extends cdk.Stack {
     // Grant CodeBuild permission to push to ECR
     props.ecrRepository.grantPullPush(buildProject);
 
+    // Grant CodeBuild permission to run ECS tasks for migrations
+    buildProject.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        'ecs:RunTask',
+        'ecs:DescribeTasks',
+        'ecs:StopTask',
+      ],
+      resources: ['*'], // Specific task definition ARNs
+    }));
+
+    // Grant CodeBuild permission to describe EC2 resources (for finding subnets)
+    buildProject.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: [
+        'ec2:DescribeSubnets',
+        'ec2:DescribeSecurityGroups',
+        'ec2:DescribeNetworkInterfaces',
+      ],
+      resources: ['*'], // EC2 describe actions don't support resource-level permissions
+    }));
+
+    // Grant CodeBuild permission to pass the execution role to ECS tasks
+    buildProject.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['iam:PassRole'],
+      resources: ['*'],
+      conditions: {
+        StringEquals: {
+          'iam:PassedToService': 'ecs-tasks.amazonaws.com',
+        },
+      },
+    }));
+
     // =====================================================
     // STEP 5: Create the Pipeline
     // =====================================================
