@@ -72,6 +72,12 @@ export class CodePipelineStack extends cdk.Stack {
         REPOSITORY_URI: {
           value: props.ecrRepository.repositoryUri,
         },
+        VPC_SUBNETS: {
+          value: props.vpc.publicSubnets.map(subnet => subnet.subnetId).join(','),
+        },
+        ECS_CLUSTER: {
+          value: props.ecsCluster.clusterName,
+        },
       },
 
       buildSpec: codebuild.BuildSpec.fromSourceFilename('back-end/buildspec.yml'),
