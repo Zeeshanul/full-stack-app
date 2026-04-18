@@ -1,0 +1,65 @@
+<div class="users-page">
+
+  <div class="header">
+    <h2>Users</h2>
+
+    <button class="add-btn" (click)="openModal()">
+      + Add User
+    </button>
+  </div>
+
+  <!-- Table -->
+  <table class="users-table">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let user of users">
+        <td>{{ user.id }}</td>
+        <td>{{ user.name }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.isActive ? 'Active' : 'Inactive' }}</td>
+
+        <td class="actions">
+          <button class="icon-btn edit" (click)="editUser(user)">
+            <i class="pi pi-pencil"></i>
+          </button>
+
+          <button class="icon-btn delete" (click)="deleteUser(user.id)">
+            <i class="pi pi-trash"></i>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" *ngIf="isModalOpen">
+  <div class="modal">
+
+    <div class="modal-header">
+      <h3>{{ editingUserId ? 'Edit User' : 'Add User' }}</h3>
+    </div>
+
+    <div class="modal-body">
+      <input placeholder="Name" [(ngModel)]="newUser.name" />
+      <input placeholder="Email" [(ngModel)]="newUser.email" />
+      <input placeholder="Role" [(ngModel)]="newUser.role" />
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn cancel" (click)="closeModal()">Cancel</button>
+      <button class="btn save" (click)="saveUser()">Save</button>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,17 @@
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+import { ShellRoutingModule } from './shell-routing-module';
+import { Base } from './components/base/base';
+
+
+@NgModule({
+  declarations: [
+    Base
+  ],
+  imports: [
+    CommonModule,
+    ShellRoutingModule
+  ]
+})
+export class ShellModule { }

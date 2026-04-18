@@ -1,0 +1,19 @@
+<div class="shell">
+  <aside class="sidebar">
+    <h2 class="logo">My App</h2>
+
+    <nav class="nav">
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        Home
+      </a>
+
+      <a routerLink="/users" routerLinkActive="active">
+        Users
+      </a>
+    </nav>
+  </aside>
+
+  <main class="content">
+    <router-outlet></router-outlet>
+  </main>
+</div>
