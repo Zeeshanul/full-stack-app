@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/// <reference types="node" />
 import * as cdk from "aws-cdk-lib/core";
 import { NetworkStack } from "../lib/network-stack";
 import { DatabaseStack } from "../lib/database-stack";
@@ -46,14 +47,14 @@ const codePipelineStack = new CodePipelineStack(
   "FullStackCodePipelineStack",
   {
     env,
-    ecrRepository: ecsStack.repository, // ← Pass ECR repo from ECS stack
-    ecsService: ecsStack.service, // ← Pass ECS service from ECS stack
-    ecsCluster: ecsStack.cluster, // ← Pass ECS cluster from ECS stack
-    vpc: networkStack.vpc, // ← Pass VPC for migration task
+    ecrRepository: ecsStack.repository,
+    ecsService: ecsStack.service,
+    ecsCluster: ecsStack.cluster,
+    vpc: networkStack.vpc,
     description: "CI/CD pipeline for backend deployment",
   }
 );
-codePipelineStack.addDependency(ecsStack); // Pipeline needs ECS resources to exist first
+codePipelineStack.addDependency(ecsStack);
 
 // 4. Main Infrastructure Stack (placeholder for future app resources)
 const infrastructureStack = new InfrastructureStack(app, "FullStackAppStack", {

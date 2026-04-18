@@ -1,0 +1,27 @@
+version: 0.2
+
+env:
+  parameter-store:
+    DB_HOST: '/fullstack/database/host'
+    DB_USERNAME: '/fullstack/database/username'
+    DB_NAME: '/fullstack/database/name'
+    DB_PASSWORD: '/fullstack/database/password'
+  variables:
+    DB_PORT: '3306'
+
+phases:
+  install:
+    on-failure: ABORT
+    runtime-versions:
+      nodejs: 20
+    commands:
+      - echo Installing dependencies...
+      - cd back-end
+      - npm ci
+
+  build:
+    on-failure: ABORT
+    commands:
+      - echo Running database migrations...
+      - npm run migration:run
+      - echo Migrations completed successfully
