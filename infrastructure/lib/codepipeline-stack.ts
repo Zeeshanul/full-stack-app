@@ -163,7 +163,41 @@ export class CodePipelineStack extends cdk.Stack {
     });
 
     // =====================================================
-    // STAGE 3: DEPLOY - Update ECS Service
+    // STAGE 3: MIGRATE - Run database migrations
+    // =====================================================
+    const migrationProject = new codebuild.PipelineProject(this, 'MigrationBuildProject', {
+      projectName: 'backend-migration-project',
+
+      environment: {
+        buildImage: codebuild.LinuxBuildImage.STANDARD_7_0,
+        computeType: codebuild.ComputeType.SMALL,
+      },
+
+      buildSpec: codebuild.BuildSpec.fromSourceFilename('back-end/buildspec-migrate.yml'),
+    });
+
+    // Grant the migration project permission to read DB credentials from Parameter Store
+    migrationProject.addToRolePolicy(new iam.PolicyStatement({
+      effect: iam.Effect.ALLOW,
+      actions: ['ssm:GetParameters', 'ssm:GetParameter'],
+      resources: [
+        `arn:aws:ssm:${this.region}:${this.account}:parameter/fullstack/database/*`,
+      ],
+    }));
+
+    pipeline.addStage({
+      stageName: 'Migrate',
+      actions: [
+        new codepipeline_actions.CodeBuildAction({
+          actionName: 'Run_Migrations',
+          project: migrationProject,
+          input: sourceOutput,
+        }),
+      ],
+    });
+
+    // =====================================================
+    // STAGE 4: DEPLOY - Update ECS Service
     // =====================================================
     pipeline.addStage({
       stageName: 'Deploy',
